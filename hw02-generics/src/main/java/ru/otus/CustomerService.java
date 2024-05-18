@@ -3,11 +3,11 @@ package ru.otus;
 import java.util.AbstractMap;
 import java.util.Comparator;
 import java.util.Map;
-import java.util.SortedMap;
+import java.util.NavigableMap;
 import java.util.TreeMap;
 
 public class CustomerService {
-    private SortedMap<Customer, String> customers = new TreeMap<>(
+    private final NavigableMap<Customer, String> customers = new TreeMap<>(
             Comparator.comparing(Customer::getScores)
     );
 
@@ -18,16 +18,9 @@ public class CustomerService {
     }
 
     public Map.Entry<Customer, String> getNext(Customer customer) {
-        long scores = customer.getScores();
+        var next = customers.higherEntry(customer);
 
-        for (Map.Entry<Customer, String> entry : customers.entrySet()) {
-            if (entry.getKey().getScores() > scores) {
-                return newEntry(entry);
-            }
-
-        }
-
-        return null;
+        return next == null ? null : newEntry(next);
     }
 
     private static AbstractMap.SimpleEntry<Customer, String> newEntry(Map.Entry<Customer, String> entry) {
