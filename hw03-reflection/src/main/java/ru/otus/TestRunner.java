@@ -42,7 +42,7 @@ public final class TestRunner {
                     LOGGER.warn(assertionError.getMessage());
                     failedTestsCount++;
 
-                    if (object != null){
+                    if (object != null) {
                         invokeMethods(object, After.class);
                     }
                     LOGGER.info("_________Test_end_________\n");
@@ -50,7 +50,7 @@ public final class TestRunner {
                     LOGGER.error("Test {} выбросил исключение", method.getName(), e);
                     failedTestsCount++;
 
-                    if (object != null){
+                    if (object != null) {
                         invokeMethods(object, After.class);
                     }
                     LOGGER.info("_________Test_end_________\n");
@@ -60,15 +60,14 @@ public final class TestRunner {
             }
         }
 
-        resultStatistic(testMethods, failedTestsCount);
+        resultStatistic(testMethods.size(), failedTestsCount);
     }
 
-    private static void resultStatistic(List<Method> testMethods, int failedTestsCount) {
-        int testCount = testMethods.size();
-        int successTestsCount = testCount - failedTestsCount;
+    private static void resultStatistic(int testMethodsCount, int failedTestsCount) {
+        int successTestsCount = testMethodsCount - failedTestsCount;
 
         LOGGER.info("Статистика: Всего тестов {}. Успешные {}. Проваленные {}.",
-                testCount, successTestsCount, failedTestsCount);
+                testMethodsCount, successTestsCount, failedTestsCount);
     }
 
     private static void invokeMethods(Object object, Class<? extends Annotation> annotationClass) {
