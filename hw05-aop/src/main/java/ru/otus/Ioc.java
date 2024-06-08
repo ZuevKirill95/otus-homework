@@ -16,17 +16,18 @@ class Ioc {
     private Ioc() {
     }
 
-    static TestLoggingInterface createTestLogging() {
-        InvocationHandler handler = new DemoInvocationHandler(new TestLogging());
-        return (TestLoggingInterface)
-                Proxy.newProxyInstance(Ioc.class.getClassLoader(), new Class<?>[]{TestLoggingInterface.class}, handler);
+    static Object createProxy(Object target) {
+        return Proxy.newProxyInstance(
+                target.getClass().getClassLoader(),
+                target.getClass().getInterfaces(),
+                new LogInvocationHandler(target));
     }
 
-    static class DemoInvocationHandler implements InvocationHandler {
-        private final TestLoggingInterface testLogging;
+    static class LogInvocationHandler implements InvocationHandler {
+        private final Object testLogging;
         private final Map<Method, String> cache = new HashMap<>();
 
-        DemoInvocationHandler(TestLoggingInterface testLogging) {
+        LogInvocationHandler(Object testLogging) {
             this.testLogging = testLogging;
         }
 
