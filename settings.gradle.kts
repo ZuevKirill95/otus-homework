@@ -6,6 +6,8 @@ include("hw04-gc")
 include("hw05-aop")
 include("hw07-message-handler")
 include("hw06-atm")
+include("hw07-message-handler")
+include("hw08-io")
 
 pluginManagement {
     val jgitver: String by settings
