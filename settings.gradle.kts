@@ -30,3 +30,4 @@ pluginManagement {
         id("com.diffplug.spotless") version spotless
     }
 }
+include("hw10-jpql")
