@@ -37,9 +37,7 @@ public class DataTemplateJdbc<T> implements DataTemplate<T> {
         return dbExecutor.executeSelect(connection, sql, List.of(id), rs -> {
             try {
                 if (rs.next()) {
-                    Object[] args = getArgs(rs);
-
-                    return entityClassMetaData.getConstructor().newInstance(args);
+                    return createInstance(rs);
                 }
                 return null;
             } catch (SQLException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
@@ -57,8 +55,7 @@ public class DataTemplateJdbc<T> implements DataTemplate<T> {
                     var result = new ArrayList<T>();
                     try {
                         while (rs.next()) {
-                            Object[] args = getArgs(rs);
-                            T instance = entityClassMetaData.getConstructor().newInstance(args);
+                            T instance = createInstance(rs);
 
                             result.add(instance);
                         }
@@ -68,20 +65,26 @@ public class DataTemplateJdbc<T> implements DataTemplate<T> {
                         throw new DataTemplateException(e);
                     }
                 })
-                .orElseThrow(() -> new RuntimeException("Unexpected error"));
+                .orElseThrow(() -> new DataTemplateException("Unexpected error"));
     }
 
-    private Object[] getArgs(ResultSet rs) {
-        return entityClassMetaData.getAllFields().stream()
-                .map(field -> {
+    private T createInstance(ResultSet rs)
+            throws InvocationTargetException, InstantiationException, IllegalAccessException {
+        T instance = entityClassMetaData.getConstructor().newInstance();
+
+        entityClassMetaData.getAllFields()
+                .forEach(field -> {
                     String name = field.getName();
                     try {
-                        return rs.getObject(name);
-                    } catch (SQLException e) {
-                        throw new RuntimeException(e);
+                        Object value = rs.getObject(name);
+                        field.setAccessible(true);
+                        field.set(instance, value);
+                    } catch (SQLException | IllegalAccessException e) {
+                        throw new DataTemplateException(e);
                     }
-                })
-                .toArray();
+                });
+
+        return instance;
     }
 
     @Override

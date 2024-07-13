@@ -6,18 +6,20 @@ import java.util.stream.Collectors;
 
 public class EntitySQLMetaDataImpl implements EntitySQLMetaData {
     private final EntityClassMetaData<?> entityClassMetaData;
+    private final String sqlSelectAll;
+    private final String sqlSelectById;
+    private final String sqlInsert;
+    private final String sqlUpdate;
 
     public EntitySQLMetaDataImpl(EntityClassMetaData<?> entityClassMetaData) {
         this.entityClassMetaData = entityClassMetaData;
+        this.sqlSelectAll = "select * from %s".formatted(entityClassMetaData.getName());
+        this.sqlSelectById = createSqlSelectById();
+        this.sqlInsert = createSqlInsert();
+        this.sqlUpdate = createSqlUpdate();
     }
 
-    @Override
-    public String getSelectAllSql() {
-        return "select * from %s".formatted(entityClassMetaData.getName());
-    }
-
-    @Override
-    public String getSelectByIdSql() {
+    private String createSqlSelectById() {
         String selectValues = entityClassMetaData.getAllFields().stream()
                 .map(Field::getName)
                 .collect(Collectors.joining(", "));
@@ -26,8 +28,7 @@ public class EntitySQLMetaDataImpl implements EntitySQLMetaData {
                 entityClassMetaData.getName(), entityClassMetaData.getIdField().getName());
     }
 
-    @Override
-    public String getInsertSql() {
+    private String createSqlInsert() {
         List<Field> fieldsWithoutId = entityClassMetaData.getFieldsWithoutId();
 
         String insertValues = fieldsWithoutId.stream()
@@ -42,13 +43,32 @@ public class EntitySQLMetaDataImpl implements EntitySQLMetaData {
         return "insert into %s(%s) values (%s)".formatted(entityClassMetaData.getName(), insertValues, wildcards);
     }
 
-    @Override
-    public String getUpdateSql() {
+    private String createSqlUpdate() {
         String updateValues = entityClassMetaData.getFieldsWithoutId().stream()
                 .map(Field::getName)
                 .collect(Collectors.joining("= ?,"));
 
         return "update %s set %s = ? where %s = ?".formatted(entityClassMetaData.getName(), updateValues,
                 entityClassMetaData.getIdField().getName());
+    }
+
+    @Override
+    public String getSelectAllSql() {
+        return sqlSelectAll;
+    }
+
+    @Override
+    public String getSelectByIdSql() {
+        return sqlSelectById;
+    }
+
+    @Override
+    public String getInsertSql() {
+        return sqlInsert;
+    }
+
+    @Override
+    public String getUpdateSql() {
+        return sqlUpdate;
     }
 }
