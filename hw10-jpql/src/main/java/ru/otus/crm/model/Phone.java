@@ -1,9 +1,11 @@
 package ru.otus.crm.model;
 
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,9 +23,8 @@ public class Phone {
 
     private String number;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "client_id")
-//    private Client client;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Client client;
 
     public Phone(Long id, String number) {
         this.id = id;
