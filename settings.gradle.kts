@@ -8,6 +8,8 @@ include("hw07-message-handler")
 include("hw06-atm")
 include("hw07-message-handler")
 include("hw08-io")
+include("hw09-jdbc:demo")
+include("hw09-jdbc:homework")
 
 pluginManagement {
     val jgitver: String by settings
