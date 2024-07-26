@@ -5,6 +5,7 @@ import org.reflections.scanners.SubTypesScanner;
 import ru.otus.appcontainer.api.AppComponent;
 import ru.otus.appcontainer.api.AppComponentsContainer;
 import ru.otus.appcontainer.api.AppComponentsContainerConfig;
+import ru.otus.exceptions.ContainerException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -83,7 +84,7 @@ public class AppComponentsContainerImpl implements AppComponentsContainer {
             Object config = createConfigClass(configClass);
 
             if (appComponentsByName.containsKey(name)) {
-                throw new RuntimeException();
+                throw new ContainerException("duplicate app component name: " + name);
             }
 
             Object component;
@@ -97,7 +98,7 @@ public class AppComponentsContainerImpl implements AppComponentsContainer {
 
                     Object componentParam = appComponents.stream().filter(
                             appComponent -> type.isAssignableFrom(appComponent.getClass())
-                    ).findAny().orElseThrow(() -> new RuntimeException());
+                    ).findAny().orElseThrow(() -> new ContainerException("No component found for " + type));
 
                     componentParams.add(componentParam);
                 }
@@ -113,24 +114,16 @@ public class AppComponentsContainerImpl implements AppComponentsContainer {
     private Object createComponent(Method method, Object config, Object... args) {
         try {
             return method.invoke(config, args);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
+        } catch (IllegalAccessException | InvocationTargetException e) {
+            throw new ContainerException("Error creating component " + method.getName(), e);
         }
     }
 
     private static Object createConfigClass(Class<?> configClass) {
         try {
             return configClass.getConstructor().newInstance();
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+            throw new ContainerException("Error creating config " + configClass, e);
         }
     }
 
@@ -147,11 +140,11 @@ public class AppComponentsContainerImpl implements AppComponentsContainer {
                 .toList();
 
         if (components.isEmpty()) {
-            throw new RuntimeException();
+            throw new ContainerException("No component found for class " + componentClass.getName());
         }
 
         if (components.size() > 1) {
-            throw new RuntimeException();
+            throw new ContainerException("Multiple component found for class " + componentClass.getName());
         }
 
         return (C) components.getFirst();
@@ -162,7 +155,7 @@ public class AppComponentsContainerImpl implements AppComponentsContainer {
         Object component = appComponentsByName.get(componentName);
 
         if (component == null) {
-            throw new RuntimeException();
+            throw new ContainerException("No component found for name " + componentName);
         }
 
         return (C) component;
