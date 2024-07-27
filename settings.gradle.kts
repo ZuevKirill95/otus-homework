@@ -33,4 +33,5 @@ pluginManagement {
     }
 }
 include("hw10-jpql")
+include("hw12-webserver")
 include("hw11-cache")
