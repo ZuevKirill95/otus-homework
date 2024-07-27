@@ -14,10 +14,10 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @SuppressWarnings("squid:S1068")
 public class AppComponentsContainerImpl implements AppComponentsContainer {
@@ -32,10 +32,7 @@ public class AppComponentsContainerImpl implements AppComponentsContainer {
                 .filter(config -> config.isAnnotationPresent(AppComponentsContainerConfig.class))
                 .toList();
 
-        List<Class<?>> configsSortedByOrder = configs.stream()
-                .filter(config -> config.isAnnotationPresent(AppComponentsContainerConfig.class))
-                .sorted(Comparator.comparingInt(method -> method.getAnnotation(AppComponentsContainerConfig.class).order()))
-                .toList();
+        List<Class<?>> configsSortedByOrder = getConfigsSortedByOrder(configs);
 
         for (Class<?> configClass : configsSortedByOrder) {
             processConfig(configClass);
@@ -53,21 +50,29 @@ public class AppComponentsContainerImpl implements AppComponentsContainer {
             checkConfigClass(configClass);
         }
 
-        List<Class<?>> configsSortedByOrder = Arrays.stream(initialConfigClass)
-                .filter(config -> config.isAnnotationPresent(AppComponentsContainerConfig.class))
-                .sorted(Comparator.comparingInt(method -> method.getAnnotation(AppComponentsContainerConfig.class).order()))
-                .toList();
+        List<Class<?>> configsSortedByOrder = getConfigsSortedByOrder(Arrays.asList(initialConfigClass));
 
         for (Class<?> configClass : configsSortedByOrder) {
             processConfig(configClass);
         }
     }
 
+    private static List<Class<?>> getConfigsSortedByOrder(List<Class<?>> configs) {
+        List<Class<?>> list = new ArrayList<>();
+
+        for (Class<?> config : configs) {
+            if (config.isAnnotationPresent(AppComponentsContainerConfig.class)) {
+                list.add(config);
+            }
+        }
+
+        list.sort(Comparator.comparingInt(method -> method.getAnnotation(AppComponentsContainerConfig.class).order()));
+        return list;
+    }
+
     public static Set<Class<?>> findAllClassesInPackage(String packageName) {
         Reflections reflections = new Reflections(packageName, new SubTypesScanner(false));
-        return reflections.getSubTypesOf(Object.class)
-                .stream()
-                .collect(Collectors.toSet());
+        return new HashSet<>(reflections.getSubTypesOf(Object.class));
     }
 
     private void processConfig(Class<?> configClass) {
@@ -77,38 +82,32 @@ public class AppComponentsContainerImpl implements AppComponentsContainer {
                 .sorted(Comparator.comparingInt(method -> method.getAnnotation(AppComponent.class).order()))
                 .toList();
 
-        sortedMethodByOrder.forEach(method -> {
+        for (Method method : sortedMethodByOrder) {
             AppComponent annotation = method.getAnnotation(AppComponent.class);
             String name = annotation.name();
-            int order = annotation.order();
             Object config = createConfigClass(configClass);
 
             if (appComponentsByName.containsKey(name)) {
                 throw new ContainerException("duplicate app component name: " + name);
             }
 
-            Object component;
-            if (order == 0) {
-                component = createComponent(method, config);
-            } else {
-                List<Object> componentParams = new ArrayList<>();
-                Parameter[] parameters = method.getParameters();
-                for (Parameter parameter : parameters) {
-                    Class<?> type = parameter.getType();
+            Parameter[] parameters = method.getParameters();
+            Object[] componentParams = new Object[parameters.length];
 
-                    Object componentParam = appComponents.stream().filter(
-                            appComponent -> type.isAssignableFrom(appComponent.getClass())
-                    ).findAny().orElseThrow(() -> new ContainerException("No component found for " + type));
+            for (int i = 0; i < parameters.length; i++) {
+                Parameter parameter = parameters[i];
+                Class<?> type = parameter.getType();
 
-                    componentParams.add(componentParam);
-                }
+                Object componentParam = getAppComponent(type);
 
-                component = createComponent(method, config, componentParams.toArray());
+                componentParams[i] = componentParam;
             }
+
+            Object component = createComponent(method, config, componentParams);
 
             appComponentsByName.put(name, component);
             appComponents.add(component);
-        });
+        }
     }
 
     private Object createComponent(Method method, Object config, Object... args) {
@@ -122,7 +121,8 @@ public class AppComponentsContainerImpl implements AppComponentsContainer {
     private static Object createConfigClass(Class<?> configClass) {
         try {
             return configClass.getConstructor().newInstance();
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException |
+                 NoSuchMethodException e) {
             throw new ContainerException("Error creating config " + configClass, e);
         }
     }
