@@ -10,7 +10,7 @@ import ru.otus.crm.model.Address;
 import ru.otus.crm.model.Client;
 import ru.otus.crm.model.Phone;
 import ru.otus.crm.service.DBServiceClient;
-import ru.otus.model.ClientRequest;
+import ru.otus.dto.ClientRequest;
 
 import java.io.IOException;
 import java.util.List;
