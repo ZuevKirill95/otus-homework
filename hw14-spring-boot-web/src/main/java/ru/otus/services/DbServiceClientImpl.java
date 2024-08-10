@@ -1,4 +1,4 @@
-package ru.otus.crm.service;
+package ru.otus.services;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -6,8 +6,8 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import ru.otus.crm.model.Client;
-import ru.otus.crm.repository.ClientRepository;
+import ru.otus.model.Client;
+import ru.otus.repository.ClientRepository;
 import ru.otus.sessionmanager.TransactionManager;
 
 @Service
@@ -29,13 +29,6 @@ public class DbServiceClientImpl implements DBServiceClient {
             log.info("saved client: {}", savedClient);
             return savedClient;
         });
-    }
-
-    @Override
-    public Optional<Client> getClient(long id) {
-        var clientOptional = clientRepository.findById(id);
-        log.info("client: {}", clientOptional);
-        return clientOptional;
     }
 
     @Override
