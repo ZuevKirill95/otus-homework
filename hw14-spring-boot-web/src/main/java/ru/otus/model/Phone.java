@@ -1,38 +1,34 @@
 package ru.otus.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.annotation.PersistenceCreator;
 import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
-@Setter
-@NoArgsConstructor
+@ToString
 @Table(name = "phone")
-public class Phone implements Cloneable {
+public class Phone {
     @Id
-    private Long id;
+    private final Long id;
 
-    private String number;
+    private final Long clientId;
 
-    @Transient
-    private Client client;
+    private final String number;
 
-    public Phone(Long id, String number) {
+    @PersistenceCreator
+    public Phone(Long id, Long clientId, String number) {
         this.id = id;
+        this.clientId = clientId;
         this.number = number;
     }
 
-    public Phone(Long id, String number, Client client) {
-        this.id = id;
-        this.number = number;
-        this.client = client;
-    }
-
-    @Override
-    public Phone clone() {
-        return new Phone(this.id, this.number, this.client);
+    public Phone(Long clientId, String number) {
+        this(null, clientId, number);
     }
 }

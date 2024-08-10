@@ -36,5 +36,4 @@ public class ClientRestController {
 
         return new Client(null, name, address, List.of(phone));
     }
-
 }
