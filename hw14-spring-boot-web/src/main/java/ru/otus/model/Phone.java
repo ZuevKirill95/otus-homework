@@ -1,13 +1,9 @@
 package ru.otus.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceCreator;
-import org.springframework.data.annotation.Transient;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Getter
@@ -28,7 +24,7 @@ public class Phone {
         this.number = number;
     }
 
-    public Phone(Long clientId, String number) {
-        this(null, clientId, number);
+    public Phone(String number) {
+        this(null, null, number);
     }
 }

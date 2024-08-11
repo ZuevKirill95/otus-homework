@@ -31,9 +31,9 @@ public class ClientRestController {
         String street = clientRequest.address();
         String number = clientRequest.phone();
 
-        Address address = new Address(null, street);
-        Phone phone = new Phone(null, number);
+        Address address = new Address(street);
+        Phone phone = new Phone(number);
 
-        return new Client(null, name, address, List.of(phone));
+        return new Client(name, address, List.of(phone));
     }
 }
