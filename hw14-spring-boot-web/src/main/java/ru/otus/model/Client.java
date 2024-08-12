@@ -9,6 +9,7 @@ import org.springframework.data.relational.core.mapping.MappedCollection;
 import org.springframework.data.relational.core.mapping.Table;
 
 import java.util.List;
+import java.util.Set;
 
 @Table(name = "client")
 @Getter
@@ -26,14 +27,14 @@ public class Client {
     private final Address address;
 
     @MappedCollection(idColumn = "client_id")
-    private final List<Phone> phones;
+    private final Set<Phone> phones;
 
-    public Client(String name, Address address, List<Phone> phones) {
+    public Client(String name, Address address, Set<Phone> phones) {
         this(null, name, address, phones);
     }
 
     @PersistenceCreator
-    public Client(Long id, String name, Address address, List<Phone> phones) {
+    public Client(Long id, String name, Address address, Set<Phone> phones) {
         this.id = id;
         this.name = name;
         this.address = address;

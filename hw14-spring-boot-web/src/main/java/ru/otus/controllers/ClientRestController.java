@@ -10,6 +10,7 @@ import ru.otus.model.Phone;
 import ru.otus.services.DBServiceClient;
 
 import java.util.List;
+import java.util.Set;
 
 @RestController
 public class ClientRestController {
@@ -34,6 +35,6 @@ public class ClientRestController {
         Address address = new Address(street);
         Phone phone = new Phone(number);
 
-        return new Client(name, address, List.of(phone));
+        return new Client(name, address, Set.of(phone));
     }
 }
