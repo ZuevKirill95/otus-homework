@@ -8,7 +8,6 @@ import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.MappedCollection;
 import org.springframework.data.relational.core.mapping.Table;
 
-import java.util.List;
 import java.util.Set;
 
 @Table(name = "client")
@@ -23,7 +22,7 @@ public class Client {
     @Column("name")
     private final String name;
 
-    @MappedCollection(idColumn = "id")
+    @MappedCollection(idColumn = "client_id")
     private final Address address;
 
     @MappedCollection(idColumn = "client_id")

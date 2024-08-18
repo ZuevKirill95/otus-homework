@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.PersistenceCreator;
+import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
 @Table(name = "address")
@@ -11,7 +12,8 @@ import org.springframework.data.relational.core.mapping.Table;
 @Setter
 public class Address {
     @Id
-    private Long id;
+    @Column("client_id")
+    private Long addressId;
 
     private String street;
 
@@ -20,8 +22,8 @@ public class Address {
     }
 
     @PersistenceCreator
-    public Address(Long id, String street) {
-        this.id = id;
+    public Address(Long addressId, String street) {
+        this.addressId = addressId;
         this.street = street;
     }
 }
