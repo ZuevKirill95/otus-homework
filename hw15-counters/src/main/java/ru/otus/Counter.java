@@ -6,7 +6,6 @@ import org.slf4j.LoggerFactory;
 public class Counter {
     private static final Logger logger = LoggerFactory.getLogger(Counter.class);
 
-    private static final Object lock = new Object();
     private static String runningThread = "t1";
 
     public static void main(String[] args) {
@@ -23,20 +22,20 @@ public class Counter {
         try {
             for (int i = 1; i <= 10; i++) {
                 while (!runningThread.equals(Thread.currentThread().getName())) {
-                    lock.wait();
+                    Counter.class.wait();
                 }
                 logger.info("count {}", i);
                 runningThread = anotherThreadName;
-                lock.notifyAll();
+                Counter.class.notifyAll();
             }
 
             for (int i = 9; i > 0; i--) {
                 while (!runningThread.equals(Thread.currentThread().getName())) {
-                    lock.wait();
+                    Counter.class.wait();
                 }
                 logger.info("count {}", i);
                 runningThread = anotherThreadName;
-                lock.notifyAll();
+                Counter.class.notifyAll();
             }
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
