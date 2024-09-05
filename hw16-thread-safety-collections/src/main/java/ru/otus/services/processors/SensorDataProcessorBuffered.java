@@ -6,10 +6,10 @@ import ru.otus.api.SensorDataProcessor;
 import ru.otus.api.model.SensorData;
 import ru.otus.lib.SensorDataBufferedWriter;
 
+import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -27,7 +27,7 @@ public class SensorDataProcessorBuffered implements SensorDataProcessor {
     public SensorDataProcessorBuffered(int bufferSize, SensorDataBufferedWriter writer) {
         this.bufferSize = bufferSize;
         this.writer = writer;
-        this.dataBuffer = new ArrayBlockingQueue<>(bufferSize);
+        this.dataBuffer = new PriorityBlockingQueue<>(bufferSize, Comparator.comparing(SensorData::getMeasurementTime));
     }
 
     @Override
@@ -49,22 +49,23 @@ public class SensorDataProcessorBuffered implements SensorDataProcessor {
     }
 
     public void flush() {
-        synchronized (this) {
-            readWriteLock.writeLock().lock();
-            if (!dataBuffer.isEmpty()) {
-                try {
-                    List<SensorData> sortedDataByTime = dataBuffer.stream()
-                            .sorted(Comparator.comparing(SensorData::getMeasurementTime))
-                            .toList();
-
-                    writer.writeBufferedData(sortedDataByTime);
-                    dataBuffer.clear();
-                } catch (Exception e) {
-                    log.error("Ошибка в процессе записи буфера", e);
+        readWriteLock.writeLock().lock();
+        if (!dataBuffer.isEmpty()) {
+            try {
+                int size = dataBuffer.size();
+                ArrayList<SensorData> dataList = new ArrayList<>(size);
+                for (int i = 0; i < size; i++) {
+                    SensorData taken = dataBuffer.take();
+                    dataList.add(taken);
                 }
+
+                writer.writeBufferedData(dataList);
+                dataBuffer.clear();
+            } catch (Exception e) {
+                log.error("Ошибка в процессе записи буфера", e);
             }
-            readWriteLock.writeLock().unlock();
         }
+        readWriteLock.writeLock().unlock();
     }
 
     @Override
