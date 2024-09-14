@@ -2,13 +2,15 @@ package ru.otus.protobuf;
 
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.stub.StreamObserver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.util.Deque;
-import java.util.LinkedList;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicLong;
 
 @SuppressWarnings({"squid:S106", "squid:S2142"})
 public class GRPCClient {
+    private static final Logger LOGGER = LoggerFactory.getLogger(GRPCServer.class);
 
     private static final String SERVER_HOST = "localhost";
     private static final int SERVER_PORT = 8190;
@@ -19,7 +21,7 @@ public class GRPCClient {
                 .build();
 
         var generateNumberServiceBlockingStub = GenerateNumberServiceGrpc.newStub(channel);
-        final Deque<Long> stackServerValues = new LinkedList<>();
+        final AtomicLong serverValue = new AtomicLong(0);
 
         var latch = new CountDownLatch(1);
         generateNumberServiceBlockingStub.generate(GenerateNumberRequest.newBuilder()
@@ -31,8 +33,8 @@ public class GRPCClient {
                     @Override
                     public void onNext(GenerateNumberResponse generateNumberResponse) {
                         long valueFromServer = generateNumberResponse.getGeneratedValue();
-                        stackServerValues.addFirst(valueFromServer);
-                        System.out.printf("new generated value on server: %s%n", valueFromServer);
+                        serverValue.set(valueFromServer);
+                        LOGGER.info("new generated value on server: {}", valueFromServer);
                     }
 
                     @Override
@@ -42,28 +44,28 @@ public class GRPCClient {
 
                     @Override
                     public void onCompleted() {
-                        System.out.println("server finished generating values");
+                        LOGGER.info("server finished generating values");
                         latch.countDown();
                     }
                 });
 
-        System.out.println("numbers Client is starting...");
+        LOGGER.info("numbers Client is starting...");
         long prevValue = 0;
         long currentValue = 0;
 
         for (int i = 0; i < 50; i++) {
             Thread.sleep(1_000);
-            Long valueFromServer = stackServerValues.pollFirst();
-            if (valueFromServer == null || prevValue == valueFromServer) {
+            Long valueFromServer = serverValue.get();
+            if (prevValue == valueFromServer) {
                 currentValue = currentValue + 1;
             } else {
                 currentValue = currentValue + valueFromServer + 1;
                 prevValue = valueFromServer;
             }
-            System.out.printf("currentValue: %s%n", currentValue);
+            LOGGER.info("currentValue: {}", currentValue);
         }
 
-        System.out.println("request completed");
+        LOGGER.info("request completed");
 
         latch.await();
         channel.shutdown();
