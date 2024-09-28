@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package ru.otus.protobuf;
+
+option java_multiple_files = true;
+
+message GenerateNumberRequest {
+  int64 firstValue = 1;
+  int64 lastValue = 2;
+}
+
+message GenerateNumberResponse {
+  int64 generatedValue = 1;
+}
+
+service GenerateNumberService {
+  rpc generate(GenerateNumberRequest) returns (stream GenerateNumberResponse);
+}
