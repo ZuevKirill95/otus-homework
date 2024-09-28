@@ -36,13 +36,13 @@ allprojects {
     val jmh: String by project
     val asm: String by project
     val glassfishJson: String by project
-
+	
     val mongodb: String by project
     val mongodbReactive: String by project
     val cassandra: String by project
     val neo4j: String by project
-    val jedis: String by project
-
+    val jedis: String by project	
+	
     val jetty: String by project
     val freemarker: String by project
 
@@ -55,6 +55,9 @@ allprojects {
     val jsr305: String by project
 
     val grpc: String by project
+
+    val wiremock: String by project
+    val r2dbcPostgresql: String by project
 
     apply(plugin = "io.spring.dependency-management")
     dependencyManagement {
@@ -69,16 +72,16 @@ allprojects {
             dependency("org.openjdk.jmh:jmh-generator-annprocess:$jmh")
             dependency("org.glassfish:jakarta.json:$glassfishJson")
             dependency("org.ow2.asm:asm-commons:$asm")
-
-            dependency("com.datastax.oss:java-driver-core:$cassandra")
+			
+			dependency("com.datastax.oss:java-driver-core:$cassandra")
             dependency("org.mongodb:mongodb-driver-core:$mongodb")
             dependency("org.mongodb:mongodb-driver-sync:$mongodb")
             dependency("org.mongodb:bson:$mongodb")
             dependency("org.mongodb:mongodb-driver-reactivestreams:${mongodbReactive}")
             dependency("org.neo4j.driver:neo4j-java-driver:$neo4j")
             dependency("redis.clients:jedis:$jedis")
-
-            dependency("org.eclipse.jetty.ee10:jetty-ee10-servlet:$jetty")
+			
+			dependency("org.eclipse.jetty.ee10:jetty-ee10-servlet:$jetty")
             dependency("org.eclipse.jetty:jetty-server:$jetty")
             dependency("org.eclipse.jetty.ee10:jetty-ee10-webapp:$jetty")
             dependency("org.eclipse.jetty:jetty-security:$jetty")
@@ -98,6 +101,8 @@ allprojects {
             dependency("io.grpc:grpc-netty:$grpc")
             dependency("io.grpc:grpc-protobuf:$grpc")
             dependency("io.grpc:grpc-stub:$grpc")
+            dependency("com.github.tomakehurst:wiremock-standalone:$wiremock")
+            dependency("io.r2dbc:r2dbc-postgresql:$r2dbcPostgresql")
         }
     }
 
