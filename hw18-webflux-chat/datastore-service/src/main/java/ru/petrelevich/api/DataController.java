@@ -18,6 +18,7 @@ import ru.petrelevich.service.DataStore;
 @RestController
 public class DataController {
     private static final Logger log = LoggerFactory.getLogger(DataController.class);
+    private static final String ROOM_1408 = "1408";
     private final DataStore dataStore;
     private final Scheduler workerPool;
 
@@ -29,6 +30,11 @@ public class DataController {
     @PostMapping(value = "/msg/{roomId}")
     public Mono<Long> messageFromChat(@PathVariable("roomId") String roomId, @RequestBody MessageDto messageDto) {
         var messageStr = messageDto.messageStr();
+
+        if (ROOM_1408.equals(roomId)) {
+            throw new IllegalArgumentException(
+                    "В комнату %s нельзя писать сообщения".formatted(ROOM_1408));
+        }
 
         var msgId = Mono.just(new Message(roomId, messageStr))
                 .doOnNext(msg -> log.info("messageFromChat:{}", msg))
@@ -46,7 +52,9 @@ public class DataController {
     public Flux<MessageDto> getMessagesByRoomId(@PathVariable("roomId") String roomId) {
         return Mono.just(roomId)
                 .doOnNext(room -> log.info("getMessagesByRoomId, room:{}", room))
-                .flatMapMany(dataStore::loadMessages)
+                .flatMapMany(room -> ROOM_1408.equals(room)
+                        ? dataStore.loadAllMessages()
+                        : dataStore.loadMessages(room))
                 .map(message -> new MessageDto(message.getMsgText()))
                 .doOnNext(msgDto -> log.info("msgDto:{}", msgDto))
                 .subscribeOn(workerPool);
